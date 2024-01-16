@@ -1,0 +1,17 @@
+{
+    "name": "user/maktab",
+    "autoload": {
+        "psr-4": {
+            "": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "hossein",
+            "email": "rahbartalab2002@gmail.com"
+        }
+    ],
+    "require": {
+        "larapack/dd": "^1.1"
+    }
+}
