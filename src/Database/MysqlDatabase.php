@@ -10,7 +10,7 @@ class MysqlDatabase implements DatabaseInterface
     private MysqlConnection $connection;
     private string $table;
     private string $query = '';
-    private PDOStatement $statement;
+    private ?PDOStatement $statement = null;
 
     public function __construct(MysqlConnection $connection)
     {
@@ -68,10 +68,21 @@ class MysqlDatabase implements DatabaseInterface
         return $this->statement->fetchAll(PDO::FETCH_OBJ);
     }
 
+    public function fetch()
+    {
+        return $this->statement->fetch(PDO::FETCH_OBJ);
+    }
+
     public function where(string $column, string $value, string $operation): self
     {
         // where $column $operation $value -> id(column) =(operation) 2(value)
-        $pattern = " where $column $operation $value";
+        if (!str_contains($this->query, 'where')) {
+            $this->query .= ' where';
+        } else {
+            $this->query .= ' and';
+        }
+
+        $pattern = " $column $operation '$value'";
         $this->query .= $pattern;
         return $this;
     }
