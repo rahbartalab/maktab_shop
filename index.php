@@ -1,40 +1,69 @@
 <?php
 
-use Car\Peykan;
+use Database\MysqlConnection;
+use Database\MysqlDatabase;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-class User
-{
-    private string $name;
-    public static int $countOfUser = 0;
+session_start();
 
-    public function __construct($name)
-    {
-        $this->name = $name;
-        self::$countOfUser++;
-    }
 
-    public function getCountOfUser()
-    {
-        return self::$countOfUser;
-    }
+$connection = MysqlConnection::getInstance();
+$connection->setPDO(new PDO('mysql:host=localhost;dbname=learnSql', 'root'));
+$builder = new MysqlDatabase($connection);
 
-    public function increase() {
-        self::$countOfUser++;
-    }
-
-    public function getName() {return $this->name;}
+if (isset($_COOKIE['user_id'])) {
+    $_SESSION['user'] = $builder
+        ->table('users')
+        ->select()
+        ->where('id', $_COOKIE['user_id'], '=')
+        ->execute()
+        ->fetch();
 }
 
-echo User::$countOfUser . '<br>';
+if (@$_SESSION['user']) {
+    header('location: dashboard.php');
+}
 
-$userOne = new User('hossein');
-$userOne->increase();
-echo User::$countOfUser . '<br>';
 
-$userTwo = new User('bahar');
+if (isset($_POST['submit'])) {
 
-echo User::$countOfUser . '<br>';
+    $user = $builder->table('users')->select()
+        ->where('username', $_POST['username'], '=')
+        ->where('password', $_POST['password'], '=')
+        ->execute()
+        ->fetch();
 
-dd($userOne->getCountOfUser() , $userOne->getName() , $userTwo->getCountOfUser() , $userTwo->getName());
+    if ($user) {
+        $_SESSION['user'] = $user;
+        setcookie('user_id', $user->id, time() + 30);
+        header('location: dashboard.php');
+    } else {
+        echo 'invalid username or password';
+    }
+
+}
+
+
+?>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+
+<form action="" method="post">
+    <label for="username">username</label>
+    <input type="text" id="username" name="username">
+    <label for="password">password</label>
+    <input type="password" name="password" id="password">
+    <input type="submit" name="submit">
+</form>
+
+</body>
+</html>
